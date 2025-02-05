@@ -1,0 +1,78 @@
+# .github/workflows/production_deploy.yml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        pip install pytest
+        pytest tests/
+
+    - name: Create deployment approval
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ secrets.GITHUB_TOKEN }}
+        approvers: sumanthyahoo9  # Replace with your GitHub username
+
+    - name: Deploy to production
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        # Example deployment steps:
+        # Install AWS CLI
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+
+        # Deploy application (example using AWS Elastic Beanstalk)
+        aws elasticbeanstalk create-application-version \
+          --application-name your-app-name \
+          --version-label "prod-${{ github.sha }}" \
+          --source-bundle S3Bucket="your-bucket",S3Key="your-app.zip"
+        
+        aws elasticbeanstalk update-environment \
+          --environment-name production-environment \
+          --version-label "prod-${{ github.sha }}"
+
+    - name: Run smoke tests
+      run: |
+        # Add smoke tests for production environment
+        echo "Running smoke tests against production environment"
+        # Add your smoke test commands here
+
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Create release tag
+      if: success()
+      run: |
+        git tag v1.0.${{ github.run_number }}
+        git push origin v1.0.${{ github.run_number }}
