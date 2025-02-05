@@ -1,7 +1,11 @@
 """
 git_learning_project/src/calculator.py
 """
+
 class Calculator:
+    """
+    Calculator string
+    """
     def add(self, a: float, b: float) -> float:
         """Add two numbers."""
         return a + b
