@@ -28,6 +28,10 @@ class Calculator:
         """Raise base to the power of exponent."""
         return base ** exponent
     
+    def cube_root(self, number: float) -> float:
+        """Calculate the cube root of a number."""
+        return number ** (1/3)
+      
     def square_root(self, number: float) -> float:
         """Calculate the square root of a number."""
         if number < 0:
