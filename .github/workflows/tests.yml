@@ -31,9 +31,10 @@ jobs:
     - name: Run tests with coverage
       run: |
         PYTHONPATH=$PYTHONPATH:$(pwd) pytest --cov=src tests/
-        
+
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
+      continue-on-error: true
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        fail_ci_if_error: true
+        fail_ci_if_error: false
