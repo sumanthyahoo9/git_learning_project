@@ -6,7 +6,7 @@ from src.string_utils import StringUtils
 class TestStringUtils:
     """Unit tests for string utils."""
 
-    def __init__(self):
+    def setup_method(self):
         """Initialize the StringUtils test class."""
         self.utils = StringUtils()
 
