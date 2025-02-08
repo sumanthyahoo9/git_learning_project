@@ -1,30 +1,35 @@
-# src/data_processor.py
-from typing import List, Dict, Any
+"""Data Processing module."""
+# git_learning_project/src/data_processor.py
+from typing import List, Dict, Any, Callable
 from statistics import mean, median
 
+
 class DataProcessor:
-    """
-    Data Processing module
-    """
+    """Data Processing module."""
+
     def calculate_statistics(self, numbers: List[float]) -> Dict[str, float]:
         """Calculate basic statistics for a list of numbers."""
         if not numbers:
             raise ValueError("List cannot be empty")
-        
+
         return {
             "mean": mean(numbers),
             "median": median(numbers),
             "min": min(numbers),
-            "max": max(numbers)
+            "max": max(numbers),
         }
-    
-    def filter_by_threshold(self, numbers: List[float], threshold: float) -> List[float]:
+
+    def filter_by_threshold(
+        self, numbers: List[float], threshold: float
+    ) -> List[float]:
         """Filter numbers greater than threshold."""
         return [num for num in numbers if num > threshold]
-    
-    def group_by_property(self, items: List[Dict[str, Any]], property_name: str) -> Dict[Any, List[Dict[str, Any]]]:
+
+    def group_by_property(
+        self, items: List[Dict[str, Any]], property_name: str
+    ) -> Dict[Any, List[Dict[str, Any]]]:
         """Group items by a property."""
-        result = {}
+        result: Dict[Any, List[Dict[str, Any]]] = dict()
         for item in items:
             if property_name not in item:
                 raise KeyError(f"Property {property_name} not found in item")
@@ -33,7 +38,7 @@ class DataProcessor:
                 result[key] = []
             result[key].append(item)
         return result
-    
+
     def find_duplicates(self, items: List[Any]) -> List[Any]:
         """Find duplicate items in a list."""
         seen = set()
@@ -43,8 +48,10 @@ class DataProcessor:
                 duplicates.add(item)
             seen.add(item)
         return list(duplicates)
-    
-    def transform_data(self, data: List[Dict[str, Any]], transformations: Dict[str, callable]) -> List[Dict[str, Any]]:
+
+    def transform_data(
+        self, data: List[Dict[str, Any]], transformations: Dict[str, Callable]
+    ) -> List[Dict[str, Any]]:
         """Apply transformations to data fields."""
         result = []
         for item in data:
