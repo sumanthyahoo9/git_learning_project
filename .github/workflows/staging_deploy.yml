@@ -3,13 +3,18 @@ name: Deploy to Staging
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ] # Triggers on main
+  pull_request:
+    types: [closed] # Added: Also triggers when the PR is closed
+    branches: [main] # FOR PRs targeting the branch main
 
 jobs:
   deploy-staging:
+    # Only run if PR was merged or if direct push to main and this was added recently
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: staging
-    
+
     steps:
     - uses: actions/checkout@v2
 
@@ -44,7 +49,7 @@ jobs:
           --application-name your-app-name \
           --version-label "staging-${{ github.sha }}" \
           --source-bundle S3Bucket="your-bucket",S3Key="your-app.zip"
-        
+
         aws elasticbeanstalk update-environment \
           --environment-name staging-environment \
           --version-label "staging-${{ github.sha }}"

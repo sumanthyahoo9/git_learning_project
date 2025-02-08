@@ -2,17 +2,32 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      confirm_staging:
+        description: 'Confirm staging environment is stable'
+        required: true
+        type: boolean
+      version:
+        description: 'Version to deploy'
+        required: true
+        type: string
 
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
-    environment: production
-    
+    environment:
+      name: production
+      url: https://your-production-url.com # Replace with the actual URL
+
     steps:
     - uses: actions/checkout@v2
+
+    - name: Verify staging status
+      if: ${{!inputs.confirm_staging}}
+      run: |
+        echo "Please confirm staging environment is stable before deploying to production"
+        exit 1
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -51,7 +66,7 @@ jobs:
           --application-name your-app-name \
           --version-label "prod-${{ github.sha }}" \
           --source-bundle S3Bucket="your-bucket",S3Key="your-app.zip"
-        
+
         aws elasticbeanstalk update-environment \
           --environment-name production-environment \
           --version-label "prod-${{ github.sha }}"
@@ -74,5 +89,5 @@ jobs:
     - name: Create release tag
       if: success()
       run: |
-        git tag v1.0.${{ github.run_number }}
+        git tag v1.0.${{ github.event.inputs.version }}
         git push origin v1.0.${{ github.run_number }}
